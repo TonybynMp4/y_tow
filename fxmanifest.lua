@@ -28,6 +28,7 @@ server_scripts {
 
 dependencies {
     'ox_lib',
+    'ox_target'
 }
 
 lua54 'yes'
