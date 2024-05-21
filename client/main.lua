@@ -66,7 +66,7 @@ local function towVehicle(data)
         end
 
         if lib.progressBar({
-            duration = 10,
+            duration = config.detachTime,
             label = locale("progress.untowing_vehicle"),
             canCancel = true,
             allowRagdoll = false,
@@ -101,7 +101,7 @@ local function towVehicle(data)
     end
 
     if lib.progressBar({
-        duration = 10,
+        duration = config.attachTime,
         label = locale("progress.towing_vehicle"),
         allowRagdoll = false,
         allowSwimming = false,
