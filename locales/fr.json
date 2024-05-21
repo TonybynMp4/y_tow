@@ -1,2 +1,23 @@
 {
+    "target": {
+        "attach": "Attacher le vehicule",
+        "detach": "Détacher le vehicule",
+        "set_target": "Définir comme véhicule à remorquer"
+    },
+    "notify": {
+        "error": {
+            "too_far": "Trop loin du véhicule",
+            "failed_attach": "Impossible d'attacher le véhicule",
+            "failed_detach": "Impossible de détacher le véhicule",
+            "canceled": "annulée..",
+            "no_vehicle_set": "Vous n'avez pas défini de véhicule à remorquer"
+        },
+        "inform": {
+            "vehicle_set": "Véhicule à remorquer défini"
+        }
+    },
+    "progress": {
+        "untowing_vehicle": "Détache du véhicule..",
+        "towing_vehicle": "Attache le véhicule.."
+    }
 }

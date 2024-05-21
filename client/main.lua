@@ -1,5 +1,4 @@
 local config = require 'config.client'
-local sharedConfig = require 'config.shared'
 local vehicleToTow
 
 local function isTowVehicle(entity)
@@ -12,43 +11,44 @@ local function isTowVehicle(entity)
 end
 
 local function attachVehicle(towerVehicle, towedVehicle)
-    if not towerVehicle or not towedVehicle then return end
+    if not towerVehicle or not towedVehicle then return false end
 
-    print(#(GetEntityCoords(towerVehicle) - GetEntityCoords(towedVehicle)))
-    if #(GetEntityCoords(towerVehicle) - GetEntityCoords(towedVehicle)) > 15 then
-        exports.qbx_core:Notify("Vehicle is too far away", "error")
-        return
+    if #(GetEntityCoords(towerVehicle) - GetEntityCoords(towedVehicle)) > config.maxDistanceFromTower then
+        exports.qbx_core:Notify(locale('notify.error.too_far'), "error")
+        return false
     end
 
     local towerModel = GetEntityModel(towerVehicle)
     local offsetCoords = config.offsets.tow.coords[towerModel] or vec3(0.0, 0.0, 0.0)
     local offsetRot = config.offsets.tow.rot[towerModel] or vec3(0.0, 0.0, 0.0)
-    if not offsetCoords or not offsetRot or not towerModel then return end
+    if not offsetCoords or not offsetRot or not towerModel then return false end
 
     AttachEntityToEntity(towedVehicle, towerVehicle, GetEntityBoneIndexByName(towerVehicle, config.offsets.bone[towerModel]),
     offsetCoords.x, offsetCoords.y, offsetCoords.z,
     offsetRot.x, offsetRot.y, offsetRot.z,
     true, true, false, false, 0, true)
     FreezeEntityPosition(towedVehicle, true)
+    return true
 end
 
 local function detachVehicle(towerVehicle, towedVehicle)
-    if not towerVehicle then return end
+    if not towerVehicle then return false end
 
     local towerModel = GetEntityModel(towerVehicle)
     local offsetCoords = config.offsets.drop.coords[towerModel] or vec3(0.0, 0.0, 0.0)
     local offsetRot = config.offsets.drop.rot[towerModel] or vec3(0.0, 0.0, 0.0)
 
-    if not offsetCoords or not offsetRot or not towerModel then return end
-    if not IsEntityAttachedToEntity(towedVehicle, towerVehicle) then return end
+    if not offsetCoords or not offsetRot or not towerModel then return false end
+    if not IsEntityAttachedToEntity(towedVehicle, towerVehicle) then return false end
 
     FreezeEntityPosition(towedVehicle, false)
     Wait(250)
-    AttachEntityToEntity(towedVehicle, towerVehicle, config.offsets.bone[towerModel],
+    AttachEntityToEntity(towedVehicle, towerVehicle, GetEntityBoneIndexByName(towerVehicle, config.offsets.bone[towerModel]),
     offsetCoords.x, offsetCoords.y, offsetCoords.z,
     offsetRot.x, offsetRot.y, offsetRot.z,
     false, false, false, false, 20, true)
     DetachEntity(towedVehicle, true, true)
+    return true
 end
 
 local function towVehicle(data)
@@ -84,16 +84,19 @@ local function towVehicle(data)
                 clip = 'fixing_a_ped'
             },
         }) then
-            detachVehicle(towerVehicle, towedVehicle)
+            if not detachVehicle(towerVehicle, towedVehicle) then
+                exports.qbx_core:Notify('notify.error.failed_detach', "error")
+                return
+            end
             vehicleState:set('towedVehicle', nil, true)
         else
-            exports.qbx_core:Notify(locale("error.canceled"), "error")
+            exports.qbx_core:Notify(locale("notify.error.canceled"), "error")
         end
         return
     end
 
-    if #(GetEntityCoords(towerVehicle) - GetEntityCoords(towedVehicle)) > 15 then
-        exports.qbx_core:Notify("Vehicle is too far away", "error")
+    if #(GetEntityCoords(towerVehicle) - GetEntityCoords(towedVehicle)) > config.maxDistanceFromTower then
+        exports.qbx_core:Notify(locale('notify.error.too_far'), "error")
         return
     end
 
@@ -116,10 +119,13 @@ local function towVehicle(data)
             clip = 'fixing_a_ped'
         },
     }) then
-        attachVehicle(towerVehicle, towedVehicle)
+        if not attachVehicle(towerVehicle, towedVehicle) then
+            exports.qbx_core:Notify('notify.error.failed_attach', "error")
+            return
+        end
         vehicleState:set('towedVehicle', towedVehicle, true)
     else
-        exports.qbx_core:Notify(locale("error.canceled"), "error")
+        exports.qbx_core:Notify(locale("notify.error.canceled"), "error")
     end
 end
 
@@ -128,16 +134,16 @@ local function setupTarget()
         {
             name = "towVehicle",
             icon = "fas fa-truck-pickup",
-            label = "Attach vehicle",
+            label = locale("target.attach"),
             distance = 7.5,
-            groups = sharedConfig.restrictToGroups and sharedConfig.towGroups,
+            groups = config.restrictToGroups and config.towGroups,
             canInteract = function(entity)
                 local vehicleState = Entity(entity).state
                 return not vehicleState.towedVehicle
             end,
             onSelect = function(data)
                 if not vehicleToTow then
-                    exports.qbx_core:Notify("No vehicle set to tow", "error")
+                    exports.qbx_core:Notify(locale("notify.error.no_vehicle_set"), "error")
                     return
                 end
                 towVehicle(data)
@@ -146,9 +152,9 @@ local function setupTarget()
         {
             name = "untowVehicle",
             icon = "fas fa-truck-pickup",
-            label = "Detach vehicle",
+            label = locale("target.detach"),
             distance = 7.5,
-            groups = sharedConfig.restrictToGroups and sharedConfig.towGroups,
+            groups = config.restrictToGroups and config.towGroups,
             canInteract = function(entity)
                 local vehicleState = Entity(entity).state
                 return not not vehicleState.towedVehicle
@@ -161,25 +167,30 @@ local function setupTarget()
         {
             name = "setTowedVehicle",
             icon = "fas fa-truck-pickup",
-            label = "Set vehicle as tow target",
+            label = locale("target.set_target"),
             distance = 7.5,
-            groups = sharedConfig.restrictToGroups and sharedConfig.towGroups,
+            groups = config.restrictToGroups and config.towGroups,
             canInteract = function (entity)
                 return not isTowVehicle(entity)
             end,
             onSelect = function(data)
                 vehicleToTow = data.entity
-                exports.qbx_core:Notify("Vehicle set to tow", "inform")
+                exports.qbx_core:Notify(locale("notify.inform.vehicle_set"), "inform")
             end
         }
     })
 end
 
 local function clearTarget()
+    exports.ox_target:removeGlobalVehicle("setTowedVehicle")
+    for i = 1, #config.towVehicleModels do
+        exports.ox_target:removeModel(config.towVehicleModels[i], {"towVehicle", "untowVehicle"})
+    end
 end
 
 AddEventHandler('onResourceStart', function(resource)
    if resource == GetCurrentResourceName() then
+        clearTarget()
         setupTarget()
    end
 end)

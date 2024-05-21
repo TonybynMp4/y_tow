@@ -1,2 +1,23 @@
 {
+    "target": {
+        "attach": "Attach vehicle",
+        "detach": "Detach vehicle",
+        "set_target": "Set vehicle as tow target"
+    },
+    "notify": {
+        "error": {
+            "too_far": "Vehicle is too far away",
+            "failed_attach": "Failed to attach vehicle",
+            "failed_detach": "Failed to detach vehicle",
+            "canceled": "Canceled..",
+            "no_vehicle_set": "No vehicle set to tow"
+        },
+        "inform": {
+            "vehicle_set": "Vehicle set to tow"
+        }
+    },
+    "progress": {
+        "untowing_vehicle": "Untowing vehicle..",
+        "towing_vehicle": "Towing vehicle.."
+    }
 }

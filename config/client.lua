@@ -1,12 +1,22 @@
 return {
+    restrictToGroups = false,
+    towGroups = {
+        "tow",
+        "bennys"
+    },
+
     towVehicleModels = {
         `flatbed`,
         `trailerflat2`,
         `trflat`,
         `wastelander`,
         `slamtruck`,
-        `skylift`
+        `skylift`,
+        `titan`,
+        `bombushka`
     },
+    --max allowed distance between vehicles to attach/detach
+    maxDistanceFromTower = 15.0,
     offsets = {
         bone = {
             [`flatbed`] = 'transmission_r',
@@ -14,16 +24,21 @@ return {
             [`trflat`] = 'attach_male',
             [`wastelander`] = 'engine',
             [`slamtruck`] = 'engine',
-            [`skylift`] = "engine"
+            [`skylift`] = 'engine',
+            [`titan`] = 'chassis',
+            [`bombushka`] = 'chassis'
         },
         tow = {
+            --offset from BONE
             coords = {
                 [`flatbed`] = vec3(0, -1.5, 0.5),
                 [`trailerflat2`] = vec3(0.1, -4.25, 0.9),
-                [`trflat`] = vec3(0, -5, 0.5),
+                [`trflat`] = vec3(0, -5, 0.75),
                 [`wastelander`] = vec3(0.0, -3, 0.55),
                 [`slamtruck`] = vec3(0.0, -4.5, 0.35),
-                [`skylift`] = vec3(0.0, 1.5, -3.5)
+                [`skylift`] = vec3(0.0, 1.5, -3.5),
+                [`titan`] = vec3(0.0, -4.0, 0.15),
+                [`bombushka`] = vec3(0.0, -5.0, 0.15)
             },
             rot = {
                 -- [`flatbed`] = vec3(0.0, 0.0, 0.0) -- Optional
@@ -31,13 +46,16 @@ return {
             }
         },
         drop = {
+            --offset from BONE
             coords = {
                 [`flatbed`] = vec3(0.0, -10.0, -1.0),
-                [`trailerflat2`] = vec3(0.0, -6.5, 0.0),
-                [`trflat`] = vec3(0.0, -6.5, 0.0),
-                [`wastelander`] = vec3(0.0, -6.0, -1.0),
+                [`trailerflat2`] = vec3(0.0, -10.0, 0.0),
+                [`trflat`] = vec3(0.0, -20.0, 0.5),
+                [`wastelander`] = vec3(0.0, -10.0, -1.0),
                 [`slamtruck`] = vec3(0.0, -10.0, -1.0),
-                [`skylift`] = vec3(0.0, -0.5, -2.5)
+                [`skylift`] = vec3(0.0, -0.5, -2.5),
+                [`titan`] = vec3(0.0, -15.0, -0.25),
+                [`bombushka`] = vec3(0.0, -25.0, 0.0)
             },
             rot = {}
         }
