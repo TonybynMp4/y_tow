@@ -23,10 +23,11 @@ local function attachVehicle(towerVehicle, towedVehicle)
     local offsetRot = config.offsets.tow.rot[towerModel] or vec3(0.0, 0.0, 0.0)
     if not offsetCoords or not offsetRot or not towerModel then return false end
 
-    AttachEntityToEntity(towedVehicle, towerVehicle, GetEntityBoneIndexByName(towerVehicle, config.offsets.bone[towerModel]),
-    offsetCoords.x, offsetCoords.y, offsetCoords.z,
-    offsetRot.x, offsetRot.y, offsetRot.z,
-    true, true, false, false, 0, true)
+    AttachEntityToEntity(towedVehicle, towerVehicle,
+        GetEntityBoneIndexByName(towerVehicle, config.offsets.bone[towerModel]),
+        offsetCoords.x, offsetCoords.y, offsetCoords.z,
+        offsetRot.x, offsetRot.y, offsetRot.z,
+        true, true, false, false, 0, true)
     FreezeEntityPosition(towedVehicle, true)
     return true
 end
@@ -43,10 +44,11 @@ local function detachVehicle(towerVehicle, towedVehicle)
 
     FreezeEntityPosition(towedVehicle, false)
     Wait(250)
-    AttachEntityToEntity(towedVehicle, towerVehicle, GetEntityBoneIndexByName(towerVehicle, config.offsets.bone[towerModel]),
-    offsetCoords.x, offsetCoords.y, offsetCoords.z,
-    offsetRot.x, offsetRot.y, offsetRot.z,
-    false, false, false, false, 20, true)
+    AttachEntityToEntity(towedVehicle, towerVehicle,
+        GetEntityBoneIndexByName(towerVehicle, config.offsets.bone[towerModel]),
+        offsetCoords.x, offsetCoords.y, offsetCoords.z,
+        offsetRot.x, offsetRot.y, offsetRot.z,
+        false, false, false, false, 20, true)
     DetachEntity(towedVehicle, true, true)
     return true
 end
@@ -66,24 +68,24 @@ local function towVehicle(data)
         end
 
         if lib.progressBar({
-            duration = config.detachTime,
-            label = locale("progress.untowing_vehicle"),
-            canCancel = true,
-            allowRagdoll = false,
-            allowSwimming = false,
-            allowCuffed = false,
-            allowFalling = false,
-            disable = {
-                move = true,
-                car = true,
-                combat = true,
-                sprint = true
-            },
-            anim = {
-                dict = 'mini@repair',
-                clip = 'fixing_a_ped'
-            },
-        }) then
+                duration = config.detachTime,
+                label = locale("progress.untowing_vehicle"),
+                canCancel = true,
+                allowRagdoll = false,
+                allowSwimming = false,
+                allowCuffed = false,
+                allowFalling = false,
+                disable = {
+                    move = true,
+                    car = true,
+                    combat = true,
+                    sprint = true
+                },
+                anim = {
+                    dict = 'mini@repair',
+                    clip = 'fixing_a_ped'
+                },
+            }) then
             if not detachVehicle(towerVehicle, towedVehicle) then
                 exports.qbx_core:Notify('notify.error.failed_detach', "error")
                 return
@@ -101,24 +103,24 @@ local function towVehicle(data)
     end
 
     if lib.progressBar({
-        duration = config.attachTime,
-        label = locale("progress.towing_vehicle"),
-        allowRagdoll = false,
-        allowSwimming = false,
-        allowCuffed = false,
-        allowFalling = false,
-        canCancel = true,
-        disable = {
-            move = true,
-            car = true,
-            combat = true,
-            sprint = true
-        },
-        anim = {
-            dict = 'mini@repair',
-            clip = 'fixing_a_ped'
-        },
-    }) then
+            duration = config.attachTime,
+            label = locale("progress.towing_vehicle"),
+            allowRagdoll = false,
+            allowSwimming = false,
+            allowCuffed = false,
+            allowFalling = false,
+            canCancel = true,
+            disable = {
+                move = true,
+                car = true,
+                combat = true,
+                sprint = true
+            },
+            anim = {
+                dict = 'mini@repair',
+                clip = 'fixing_a_ped'
+            },
+        }) then
         if not attachVehicle(towerVehicle, towedVehicle) then
             exports.qbx_core:Notify('notify.error.failed_attach', "error")
             return
@@ -170,7 +172,7 @@ local function setupTarget()
             label = locale("target.set_target"),
             distance = 7.5,
             groups = config.restrictToGroups and config.towGroups,
-            canInteract = function (entity)
+            canInteract = function(entity)
                 return not isTowVehicle(entity)
             end,
             onSelect = function(data)
@@ -184,15 +186,24 @@ end
 local function clearTarget()
     exports.ox_target:removeGlobalVehicle("setTowedVehicle")
     for i = 1, #config.towVehicleModels do
-        exports.ox_target:removeModel(config.towVehicleModels[i], {"towVehicle", "untowVehicle"})
+        exports.ox_target:removeModel(config.towVehicleModels[i], { "towVehicle", "untowVehicle" })
     end
 end
 
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+    clearTarget()
+    setupTarget()
+end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    clearTarget()
+end)
+
 AddEventHandler('onResourceStart', function(resource)
-   if resource == GetCurrentResourceName() then
+    if resource == GetCurrentResourceName() then
         clearTarget()
         setupTarget()
-   end
+    end
 end)
 
 AddEventHandler('onResourceStop', function(resource)
