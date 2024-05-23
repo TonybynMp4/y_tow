@@ -4,7 +4,7 @@ game 'gta5'
 author 'Tonybyn_Mp4'
 description 'Towing resource for the Qbox framework'
 repository 'https://github.com/TonybynMp4/y_tow'
-version '1.0.0'
+version '1.0.1'
 
 ox_lib 'locale'
 shared_scripts {
